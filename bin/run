@@ -1,0 +1,34 @@
+#!/usr/bin/env node
+
+const http = require('http');
+const Sequelize = require('sequelize');
+
+const config = require('../config')[process.env.NODE_ENV || 'development'];
+
+const log = config.log();
+const app = require('../app')(config);
+
+const server = http.createServer(app);
+
+server.listen(process.env.PORT || 3000);
+
+function connectToPostgres() {
+  const sequelize = new Sequelize(config.pos, 'username', 'password', {
+    host: 'localhost',
+    dialect: 'postgres', // Or your database dialect (mysql, sqlite, etc.)
+  });
+  try {
+    sequelize.authenticate();
+    console.log('sequelize connection successful');
+  } catch (error) {
+    console.log('sequelize connection failed', error);
+  }
+}
+
+server.on('listening', () => {
+  log.info(
+    `Hi there! I'm listening on port ${server.address().port} in ${app.get(
+      'env'
+    )} mode.`
+  );
+});
